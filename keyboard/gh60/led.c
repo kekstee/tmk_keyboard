@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "stdint.h"
 #include "led.h"
 
+void led_layer_set(uint32_t state) {}
 
 void led_set(uint8_t usb_led)
 {
