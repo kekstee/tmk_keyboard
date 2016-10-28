@@ -54,6 +54,10 @@ void matrix_init(void)
         matrix[i] = 0;
         matrix_debouncing[i] = 0;
     }
+
+    // JTAG disable for PORT F. write JTD bit twice within four cycles.
+    MCUCR |= (1<<JTD);
+    MCUCR |= (1<<JTD);
 }
 
 uint8_t matrix_scan(void)
