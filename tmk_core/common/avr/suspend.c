@@ -4,7 +4,9 @@
 #include <avr/interrupt.h>
 #include "matrix.h"
 #include "action.h"
+#include "action_layer.h"
 #include "backlight.h"
+#include "led.h"
 #include "suspend_avr.h"
 #include "suspend.h"
 #include "timer.h"
@@ -100,6 +102,10 @@ void suspend_idle(uint8_t time)
 
 void suspend_power_down(void)
 {
+    led_layer_set(0);
+#ifdef BACKLIGHT_ENABLE
+    backlight_set(0);
+#endif
 #ifdef NO_SUSPEND_POWER_DOWN
     ;
 #elif defined(SUSPEND_MODE_NOPOWERSAVE)
@@ -130,6 +136,7 @@ void suspend_wakeup_init(void)
     // clear keyboard state
     matrix_clear();
     clear_keyboard();
+    led_layer_set(layer_state);
 #ifdef BACKLIGHT_ENABLE
     backlight_init();
 #endif
