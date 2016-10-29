@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <avr/io.h>
 #include "stdint.h"
 #include "led.h"
+#include "backlight.h"
 
 /* GH60 LEDs
  *   GPIO pads
@@ -56,4 +57,9 @@ void led_set(uint8_t usb_led)
     } else {
         gh60_caps_led_off();
     }
+}
+
+void backlight_set(uint8_t level)
+{
+    (level & 1) ? gh60_esc_led_on() : gh60_esc_led_off();
 }

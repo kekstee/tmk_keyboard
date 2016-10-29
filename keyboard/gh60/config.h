@@ -47,7 +47,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     keyboard_report->mods == (MOD_BIT(KC_LSHIFT) | MOD_BIT(KC_RSHIFT)) \
 )
 
-
+/* We need only one backlight state */
+#define BACKLIGHT_LEVELS 1
 
 /*
  * Feature disable options
