@@ -33,7 +33,12 @@ extern "C" {
 #endif
 
 void led_set(uint8_t usb_led);
+
+#ifdef LED_LAYER_ENABLE
 void led_layer_set(uint32_t state);
+#else
+#define led_layer_set(state)
+#endif
 
 #ifdef __cplusplus
 }

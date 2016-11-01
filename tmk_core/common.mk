@@ -94,6 +94,10 @@ ifeq (yes,$(strip $(BACKLIGHT_ENABLE)))
     OPT_DEFS += -DBACKLIGHT_ENABLE
 endif
 
+ifeq (yes,$(strip $(LED_LAYER_ENABLE)))
+    OPT_DEFS += -DLED_LAYER_ENABLE
+endif
+
 ifeq (yes,$(strip $(KEYMAP_SECTION_ENABLE)))
     OPT_DEFS += -DKEYMAP_SECTION_ENABLE
 
