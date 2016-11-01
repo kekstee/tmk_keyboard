@@ -121,6 +121,7 @@ COMMAND_ENABLE = yes    # Commands for debug and configuration
 #SLEEP_LED_ENABLE = yes  # Breathing sleep LED during USB suspend
 NKRO_ENABLE = yes	# USB Nkey Rollover
 BACKLIGHT_ENABLE = yes  # Enable keyboard backlight functionality
+LED_LAYER_ENABLE = yes 	# Enable layer status through leds
 
 
 # Optimize size but this may cause error "relocation truncated to fit"
