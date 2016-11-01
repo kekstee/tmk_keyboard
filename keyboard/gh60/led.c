@@ -43,23 +43,16 @@ inline void gh60_wasd_leds_off(void) { DDRF &= ~(1<<7); PORTF &= ~(1<<7); }
 
 void led_layer_set(uint32_t state)
 {
-    if (state & (1<<2)) {
-        gh60_poker_leds_on();
-    } else {
-        gh60_poker_leds_off();
-    }
+    (state & (1<<1))? gh60_fn_led_on() : gh60_fn_led_off();
+    (state & (1<<2))? gh60_poker_leds_on() : gh60_poker_leds_off();
 }
 
 void led_set(uint8_t usb_led)
 {
-    if (usb_led & (1<<USB_LED_CAPS_LOCK)) {
-        gh60_caps_led_on();
-    } else {
-        gh60_caps_led_off();
-    }
+    (usb_led & (1<<USB_LED_CAPS_LOCK))? gh60_caps_led_on() : gh60_caps_led_off();
 }
 
 void backlight_set(uint8_t level)
 {
-    (level & 1) ? gh60_esc_led_on() : gh60_esc_led_off();
+    (level & 1)? gh60_esc_led_on() : gh60_esc_led_off();
 }
