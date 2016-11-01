@@ -29,9 +29,6 @@ void led_set(uint8_t usb_led)
     (usb_led & (1<<USB_LED_CAPS_LOCK)) ? backlight_caps_enable() : backlight_caps_disable();
 }
 
-void led_layer_set(uint32_t state) {
-}
-
 void backlight_set(uint8_t level)
 {
     (level & BACKLIGHT_SWITCH) ? backlight_switch_enable() : backlight_switch_disable();
