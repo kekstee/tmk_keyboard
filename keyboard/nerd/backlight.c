@@ -21,6 +21,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 void backlight_init_ports()
 {
+/* LEDs are on output compare pins OC1B OC1C
+   This activates fast PWM mode on them.
+   Prescaler 256 and 8-bit counter results in
+   16000000/256/256 = 244 Hz blink frequency.
+   Output on PWM pins are turned off when the timer
+   reaches the value in the output compare register,
+   and are turned on when it reaches TOP (=256). */
+    TCCR1A |=      // Timer control register 1A
+        (1<<WGM10) | // Fast PWM 8-bit
+        (1<<COM1B1)| // Clear OC1B on match, set at TOP
+        (1<<COM1C1); // Clear OC1C on match, set at TOP
+    TCCR1B |=      // Timer control register 1B
+        (1<<WGM12) | // Fast PWM 8-bit
+        (1<<CS12);   // Prescaler 256
+
+    // enable output
     DDRB |= 0b11100000; // PB7 (switch), PB6 (pcb), PB5 (caps)
 }
 
@@ -31,38 +47,16 @@ void led_set(uint8_t usb_led)
 
 void backlight_set(uint8_t level)
 {
-    (level & BACKLIGHT_SWITCH) ? backlight_switch_enable() : backlight_switch_disable();
-    (level & BACKLIGHT_PCB) ? backlight_pcb_enable() : backlight_pcb_disable();
-}
-
-void backlight_switch_enable()
-{
-    PORTB |= 0b10000000;
-}
-
-void backlight_switch_disable()
-{
-    PORTB &= ~0b10000000;
-}
-
-void backlight_switch_invert()
-{
-    PORTB ^= 0b10000000;
-}
-
-void backlight_pcb_enable()
-{
-    PORTB |= 0b01000000;
-}
-
-void backlight_pcb_disable()
-{
-    PORTB &= ~0b01000000;
-}
-
-void backlight_pcb_invert()
-{
-    PORTB ^= 0b01000000;
+    if (level == 0) {
+        // disable PWM and make sure outputs are off
+        TCCR1A &= (1<<COM1B1) | (1<<COM1C1);
+        PORTB &= ~0b11000000;
+    } else {
+        TCCR1A |= (1<<WGM10) | (1<<COM1B1) |(1<<COM1C1);
+        uint8_t scaled = level * level * BACKLIGHT_SCALE - 1;
+        OCR1B = scaled; // Output compare register 1B (PB7 - switch)
+        OCR1C = scaled; // Output compare register 1C (PB6 - pcb)
+    }
 }
 
 void backlight_caps_enable()

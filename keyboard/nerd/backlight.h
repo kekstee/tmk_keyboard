@@ -18,20 +18,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef BACKLIGHT_H
 #define BACKLIGHT_H
 
-enum backlight_level {
-    BACKLIGHT_SWITCH = 0b0000001,
-    BACKLIGHT_PCB    = 0b0000010,
-};
+#define BACKLIGHT_SCALE (256/(BACKLIGHT_LEVELS*BACKLIGHT_LEVELS))
 
 void backlight_init_ports(void);
-
-void backlight_switch_invert(void);
-void backlight_switch_enable(void);
-void backlight_switch_disable(void);
-
-void backlight_pcb_invert(void);
-void backlight_pcb_enable(void);
-void backlight_pcb_disable(void);
 
 void backlight_caps_invert(void);
 void backlight_caps_enable(void);
