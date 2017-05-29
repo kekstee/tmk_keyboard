@@ -330,6 +330,21 @@ void process_action(keyrecord_t *record)
                     case BACKLIGHT_LEVEL:
                         backlight_level(action.backlight.level);
                         break;
+                    case BACKLIGHTB_INCREASE:
+                        backlightb_increase();
+                        break;
+                    case BACKLIGHTB_DECREASE:
+                        backlightb_decrease();
+                        break;
+                    case BACKLIGHTB_TOGGLE:
+                        backlightb_toggle();
+                        break;
+                    case BACKLIGHTB_STEP:
+                        backlightb_step();
+                        break;
+                    case BACKLIGHTB_LEVEL:
+                        backlightb_level(action.backlight.level);
+                        break;
                 }
             }
             break;

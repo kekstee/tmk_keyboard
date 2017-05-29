@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "debug.h"
 
 backlight_config_t backlight_config;
+backlight_config_t backlightb_config;
 
 void backlight_init(void)
 {
@@ -29,6 +30,9 @@ void backlight_init(void)
     }
     backlight_config.raw = eeconfig_read_backlight();
     backlight_set(backlight_config.enable ? backlight_config.level : 0);
+
+    backlightb_config.raw = eeconfig_read_backlightb();
+    backlightb_set(backlightb_config.enable ? backlightb_config.level : 0);
 }
 
 void backlight_increase(void)
@@ -82,4 +86,59 @@ void backlight_level(uint8_t level)
     backlight_config.enable = !!backlight_config.level;
     eeconfig_write_backlight(backlight_config.raw);
     backlight_set(backlight_config.level);
+}
+
+// introduce the second set of backlight functions
+
+void backlightb_increase(void)
+{
+    if(backlightb_config.level < BACKLIGHT_LEVELS)
+    {
+        backlightb_config.level++;
+        backlightb_config.enable = 1;
+        eeconfig_write_backlightb(backlightb_config.raw);
+    }
+    dprintf("backlightb increase: %u\n", backlightb_config.level);
+    backlightb_set(backlightb_config.level);
+}
+
+void backlightb_decrease(void)
+{
+    if(backlightb_config.level > 0)
+    {
+        backlightb_config.level--;
+        backlightb_config.enable = !!backlightb_config.level;
+        eeconfig_write_backlightb(backlightb_config.raw);
+    }
+    dprintf("backlightb decrease: %u\n", backlightb_config.level);
+    backlightb_set(backlightb_config.level);
+}
+
+void backlightb_toggle(void)
+{
+    backlightb_config.enable ^= 1;
+    eeconfig_write_backlightb(backlightb_config.raw);
+    dprintf("backlightb toggle: %u\n", backlightb_config.enable);
+    backlightb_set(backlightb_config.enable ? backlightb_config.level : 0);
+}
+
+void backlightb_step(void)
+{
+    backlightb_config.level++;
+    if(backlightb_config.level > BACKLIGHT_LEVELS)
+    {
+        backlightb_config.level = 0;
+    }
+    backlightb_config.enable = !!backlightb_config.level;
+    eeconfig_write_backlightb(backlightb_config.raw);
+    dprintf("backlightb step: %u\n", backlightb_config.level);
+    backlightb_set(backlightb_config.level);
+}
+
+void backlightb_level(uint8_t level)
+{
+    backlightb_config.level ^= level;
+    backlightb_config.enable = !!backlightb_config.level;
+    eeconfig_write_backlightb(backlightb_config.raw);
+    backlightb_set(backlightb_config.level);
 }

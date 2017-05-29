@@ -30,11 +30,19 @@ typedef union {
 } backlight_config_t;
 
 void backlight_init(void);
+
 void backlight_increase(void);
 void backlight_decrease(void);
 void backlight_toggle(void);
 void backlight_step(void);
 void backlight_set(uint8_t level);
 void backlight_level(uint8_t level);
+
+void backlightb_increase(void);
+void backlightb_decrease(void);
+void backlightb_toggle(void);
+void backlightb_step(void);
+void backlightb_set(uint8_t level);
+void backlightb_level(uint8_t level);
 
 #endif

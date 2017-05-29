@@ -101,6 +101,7 @@ void suspend_power_down(void)
     led_layer_set(0);
 #ifdef BACKLIGHT_ENABLE
     backlight_set(0);
+    backlightb_set(0);
 #endif
 #ifdef NO_SUSPEND_POWER_DOWN
     ;
