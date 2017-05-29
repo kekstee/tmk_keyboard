@@ -21,42 +21,54 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 void backlight_init_ports()
 {
-/* LEDs are on output compare pins OC1B OC1C
-   This activates fast PWM mode on them.
-   Prescaler 256 and 8-bit counter results in
-   16000000/256/256 = 244 Hz blink frequency.
-   Output on PWM pins are turned off when the timer
-   reaches the value in the output compare register,
-   and are turned on when it reaches TOP (=256). */
-    TCCR1A |=      // Timer control register 1A
-        (1<<WGM10) | // Fast PWM 8-bit
-        (1<<COM1B1)| // Clear OC1B on match, set at TOP
-        (1<<COM1C1); // Clear OC1C on match, set at TOP
-    TCCR1B |=      // Timer control register 1B
-        (1<<WGM12) | // Fast PWM 8-bit
-        (1<<CS12);   // Prescaler 256
+/*
+ *    The backlight LED pins PB6 and PB7 can be
+ *    controlled through the output compare values in
+ *    OCR1C and OCR1B.
+ *    Counter1 is set to Fast PWM 8-bit mode with
+ *    a prescaler divisor of 256. (WGM10, WGM12, and CS12 bits
+ *    set in the control registers A/B)
+ *
+ *          f_clk      16000000
+ *    f = --------- = ----------- =~ 244Hz
+ *        N*(1+TOP)   256*(1+255)
+ *
+ *    The comparision port is set to low once the counter matches
+ *    our compare value (COM1x1 bit set in control register).
+ *    Setting the compare register (OCR1x) to BOTTOM (=0)
+ *    results in a narrow spike for each TOP+1 cycle.
+ *    So the comparison output is deactivated to reach
+ *    zero output.
+ */
 
-    // enable output
+    // Timer/Counter1 Control Registers
+    TCCR1A |= (1<<WGM10);
+    TCCR1B |= (1<<WGM12) | (1<<CS12);
+
+    // Enable output pins
     DDRB |= 0b11100000; // PB7 (switch), PB6 (pcb), PB5 (caps)
-}
 
-void led_set(uint8_t usb_led)
-{
-    (usb_led & (1<<USB_LED_CAPS_LOCK)) ? backlight_caps_enable() : backlight_caps_disable();
+    // PB6 and 7 are only used by output compare
+    PORTB &= ~0b11000000;
 }
 
 void backlight_set(uint8_t level)
 {
     if (level == 0) {
-        // disable PWM and make sure outputs are off
-        TCCR1A &= (1<<COM1B1) | (1<<COM1C1);
-        PORTB &= ~0b11000000;
+        // Disable comparison
+        TCCR1A &= ~((1<<COM1C1) | (1<<COM1B1));
     } else {
-        TCCR1A |= (1<<WGM10) | (1<<COM1B1) |(1<<COM1C1);
+        // Enable comparison
+        TCCR1A |= (1<<COM1B1) | (1<<COM1C1);
         uint8_t scaled = level * level * BACKLIGHT_SCALE - 1;
         OCR1B = scaled; // Output compare register 1B (PB7 - switch)
         OCR1C = scaled; // Output compare register 1C (PB6 - pcb)
     }
+}
+
+void led_set(uint8_t usb_led)
+{
+    (usb_led & (1<<USB_LED_CAPS_LOCK)) ? backlight_caps_enable() : backlight_caps_disable();
 }
 
 void backlight_caps_enable()
