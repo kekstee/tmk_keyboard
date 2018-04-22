@@ -29,13 +29,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "matrix.h"
 #include "report.h"
 #include "host.h"
+#include "led.h"
+#include "timer.h"
 
 
 
 
 static bool has_media_keys = false;
 static bool is_iso_layout = false;
-static report_mouse_t mouse_report = {};
 
 // matrix state buffer(1:on, 0:off)
 static matrix_row_t matrix[MATRIX_ROWS];
@@ -64,7 +65,7 @@ void matrix_init(void)
 
     // Determine ISO keyboard by handler id
     // http://lxr.free-electrons.com/source/drivers/macintosh/adbhid.c?v=4.4#L815
-    uint16_t handler_id = adb_host_talk(ADB_ADDR_KEYBOARD, ADB_REG_3);
+    uint8_t handler_id = (uint8_t) adb_host_talk(ADB_ADDR_KEYBOARD, ADB_REG_3);
     switch (handler_id) {
     case 0x04: case 0x05: case 0x07: case 0x09: case 0x0D:
     case 0x11: case 0x14: case 0x19: case 0x1D: case 0xC1:
@@ -75,6 +76,7 @@ void matrix_init(void)
         is_iso_layout = false;
         break;
     }
+    xprintf("hadler_id: %02X, is_iso_layout: %s\n", handler_id, (is_iso_layout ? "yes" : "no"));
 
     // Adjustable keyboard media keys: address=0x07 and handlerID=0x02
     has_media_keys = (0x02 == (adb_host_talk(ADB_ADDR_APPLIANCE, ADB_REG_3) & 0xff));
@@ -101,6 +103,8 @@ void matrix_init(void)
     // initialize matrix state: all keys off
     for (uint8_t i=0; i < MATRIX_ROWS; i++) matrix[i] = 0x00;
 
+    led_set(host_keyboard_leds());
+
     debug_enable = true;
     //debug_matrix = true;
     //debug_keyboard = true;
@@ -119,12 +123,21 @@ void matrix_init(void)
 #endif
 #define MAX(X, Y) ((X) > (Y) ? (X) : (Y))
 
+static report_mouse_t mouse_report = {};
+
 void adb_mouse_task(void)
 {
     uint16_t codes;
     int16_t x, y;
     static int8_t mouseacc;
-    _delay_ms(12);  // delay for preventing overload of poor ADB keyboard controller
+
+    /* tick of last polling */
+    static uint16_t tick_ms;
+
+    // polling with 12ms interval
+    if (timer_elapsed(tick_ms) < 12) return;
+    tick_ms = timer_read();
+
     codes = adb_host_mouse_recv();
     // If nothing received reset mouse acceleration, and quit.
     if (!codes) {
@@ -182,12 +195,18 @@ uint8_t matrix_scan(void)
     uint16_t codes;
     uint8_t key0, key1;
 
+    /* tick of last polling */
+    static uint16_t tick_ms;
+
     codes = extra_key;
     extra_key = 0xFFFF;
 
     if ( codes == 0xFFFF )
     {
-        _delay_ms(12);  // delay for preventing overload of poor ADB keyboard controller
+        // polling with 12ms interval
+        if (timer_elapsed(tick_ms) < 12) return 0;
+        tick_ms = timer_read();
+
         codes = adb_host_kbd_recv(ADB_ADDR_KEYBOARD);
 
         // Adjustable keybaord media keys
